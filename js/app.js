@@ -15,6 +15,8 @@ const AppState = {
 const DOM = {
     navLinks: document.querySelectorAll('.nav-link'),
     pageSections: document.querySelectorAll('.page-section'),
+    menuToggleBtn: document.getElementById('menu-toggle'),
+    navMenu: document.getElementById('nav-menu'),
     taskInput: document.getElementById('task-input'),
     addTaskBtn: document.getElementById('add-task-btn'),
     taskListContainer: document.getElementById('task-list'),
@@ -32,6 +34,10 @@ function renderPage(pageId) {
     DOM.navLinks.forEach(link => {
         link.classList.toggle('active', link.getAttribute('data-page') === pageId);
     });
+
+    if (DOM.navMenu) {
+        DOM.navMenu.classList.remove('active');
+    }
 }
 
 // Task Management Functions
@@ -59,17 +65,26 @@ function renderTasks() {
 function bindEvents() {
     DOM.navLinks.forEach(link => {
         link.addEventListener('click', (event) => {
-            const pageTarget = event.target.getAttribute('data-page');
+            event.preventDefault();
+            const pageTarget = link.getAttribute('data-page');
             if (pageTarget) renderPage(pageTarget);
         });
     });
 
-    if (DOM.addTaskBtn) {
-        DOM.addTaskBtn.addEventListener('click', addTask);
+    if (DOM.menuToggleBtn && DOM.navMenu) {
+        DOM.menuToggleBtn.addEventListener('click', (event) => {
+            DOM.navMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!DOM.navMenu.contains(event.target) && !DOM.menuToggleBtn.contains(event.target)) {
+                DOM.navMenu.classList.remove('active');
+            }
+        });
     }
 
-    if (DOM.contactForm) {
-        DOM.contactForm.addEventListener('submit', validateAndSubmitForm);
+    if (DOM.addTaskBtn && typeof addTask === 'function') {
+        DOM.addTaskBtn.addEventListener('click', addTask);
     }
 }
 
