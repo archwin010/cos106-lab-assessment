@@ -3,11 +3,24 @@ const AppState = {
     tasks: [],
     projects: [
         {
-            title: 'Project 1',
-            description: 'Description for Project 1',
-            imageURL: 'https://example.com/project1.jpg',
-            link: 'https://example.com/project1'
-        }
+            title: 'G-Store',
+            description: 'An e-commerce web application built with HTML, CSS, and JavaScript. It features a responsive design, product listings, and a shopping cart functionality.',
+            imageURL: 'assets/images/g_store.png',
+            link: 'https://g-store-six.vercel.app/'
+        },
+        {
+            title: 'Lovelies',
+            description: 'A wedding website template designed for couples to showcase their love story, wedding details, and RSVP functionality. Built with HTML and CSS',
+            imageURL: 'assets/images/lovelies.png',
+            link: 'https://lovelies.vercel.app/index.html#'
+        },
+        {
+            title: 'School Website',
+            description: 'A multipage school website template designed to provide information about the school, its programs, and events. Built with HTML, CSS, and JavaScript.',
+            imageURL: 'assets/images/multipage_school_website.png',
+            link: 'https://multi-page-school-website.vercel.app/'
+        },
+
     ]
 };
 
@@ -40,6 +53,24 @@ function renderPage(pageId) {
     }
 }
 
+
+// ABOUT ME CARD INTERACTIVITY & TOGGLE
+function toggleCard(cardElement) {
+    // Toggle the expanded class
+    const isExpanded = cardElement.classList.toggle('expanded');
+    
+    // Find the hint span inside the clicked card
+    const hintSpan = cardElement.querySelector('.click-hint');
+    
+    if (hintSpan) {
+        if (isExpanded) {
+            hintSpan.innerHTML = 'Click to collapse <i class="bi bi-chevron-up"></i>';
+        } else {
+            hintSpan.innerHTML = 'Click to expand <i class="bi bi-chevron-down"></i>';
+        }
+    }
+}
+
 // Task Management Functions
 function renderTasks() {
     if (!DOM.taskListContainer) return;
@@ -61,7 +92,7 @@ function renderTasks() {
     </li>`).join('');
 }
 
-// event Handlers
+// Event handlers
 function bindEvents() {
     DOM.navLinks.forEach(link => {
         link.addEventListener('click', (event) => {
@@ -88,7 +119,7 @@ function bindEvents() {
     }
 }
 
-// Initialize App
+
 function initializeApp() {
     bindEvents();
     renderPage(AppState.activeTab);

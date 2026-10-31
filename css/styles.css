@@ -109,7 +109,6 @@ body {
     color: #94a3b8;
     text-align: center;
     padding: 1.5rem;
-    margin-top: auto;
     font-size: 0.875rem;
 }
 
@@ -130,7 +129,6 @@ body {
         padding: 1.25rem 1.25rem;
         gap: 1rem;
         box-shadow: 0 10px 15px rgba(0,0,0,0.2);
-        z-index: 1001;
     }
 
     .nav-menu.active {

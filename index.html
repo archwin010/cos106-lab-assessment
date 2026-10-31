@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Academic Portfolio & Planner</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/components.css">
-    <script src="js/app.js" defer></script>
-    <script src="js/planner.js" defer></script>
-    <script src="js/validation.js" defer></script>
+    <script src="js/app.js?v=2" defer></script>
+    <script src="js/planner.js?v=2" defer></script>
+    <script src="js/validation.js?v=2" defer></script>
+    <script src="js/projects.js?v=2" defer></script>
 </head>
 <body>
 
@@ -35,7 +37,7 @@
         </div>
     </header>
 
-    <!-- 2. DYNAMIC MAIN CONTENT AREA -->
+    <!-- 2. MAIN CONTENT -->
     <main class="main-content">
         
         <!-- SECTION 1: HOME -->
@@ -53,20 +55,58 @@
         </section>
 
         <!-- SECTION 2: ABOUT ME -->
-        <section id="about" class="page-section hidden">
-            <h2>About Me</h2>
-            <div class="about-grid">
-                <div class="about-card">
-                    <h3>Education</h3>
-                    <p>B.Sc. Computer Science — Miva Open University</p>
-                </div>
-                <div class="about-card">
-                    <h3>Technical Skills</h3>
-                    <p>HTML5, CSS3, JavaScript (ES6+), Git & GitHub</p>
-                </div>
-                <div class="about-card">
-                    <h3>Aspirations</h3>
-                    <p>To design scalable software applications and build intuitive web experiences.</p>
+        <section id="about" class="page-section">
+            <div class="about-container">
+                <h2>About Me</h2>
+                <p class="about-subtitle">Click any card to explore more details about my journey, stack, and goals.</p>
+                
+                <div class="about-grid">
+                    <!-- Education Card -->
+                    <div class="about-card" onclick="toggleCard(this)">
+                        <div class="about-icon"><span class="material-symbols-outlined">school</span></div>
+                        <h3>Education</h3>
+                        <p><strong>B.Sc. Computer Science</strong></p>
+                        <p class="about-institution">Miva Open University</p>
+                        <div class="card-details">
+                            <p class="details-text">Focusing on core software engineering principles, data structures, algorithms, and modern web architectures.</p>
+                        </div>
+                        <span class="click-hint">Click to expand <span class="material-symbols-outlined hint-arrow">expand_more</span></span>
+                    </div>
+
+                    <!-- Technical Skills Card -->
+                    <div class="about-card" onclick="toggleCard(this)">
+                        <div class="about-icon"><span class="material-symbols-outlined">code</span></div>
+                        <h3>Technical Skills</h3>
+                        <div class="skills-badge-container">
+                            <span class="skill-badge">
+                                <img src="https://img.icons8.com/color/48/html-5--v1.png" alt="HTML5" class="skill-icon"> HTML5
+                            </span>
+                            <span class="skill-badge">
+                                <img src="https://img.icons8.com/color/48/css3.png" alt="CSS3" class="skill-icon"> CSS3
+                            </span>
+                            <span class="skill-badge">
+                                <img src="https://img.icons8.com/color/48/javascript--v1.png" alt="JavaScript" class="skill-icon"> JavaScript
+                            </span>
+                            <span class="skill-badge">
+                                <img src="https://img.icons8.com/color/48/github.png" alt="GitHub" class="skill-icon"> Git & GitHub
+                            </span>
+                        </div>
+                        <div class="card-details">
+                            <p class="details-text">Experienced in building responsive layouts, DOM manipulation, modular code structuring, and version control workflows.</p>
+                        </div>
+                        <span class="click-hint">Click to expand <span class="material-symbols-outlined hint-arrow">expand_more</span></span>
+                    </div>
+
+                    <!-- Goals Card -->
+                    <div class="about-card" onclick="toggleCard(this)">
+                        <div class="about-icon"><span class="material-symbols-outlined">rocket_launch</span></div>
+                        <h3>Goals</h3>
+                        <p>To design scalable software applications and build intuitive web experiences.</p>
+                        <div class="card-details">
+                            <p class="details-text">Passionate about clean code, high-performance interfaces, and solving real-world challenges through technology.</p>
+                        </div>
+                        <span class="click-hint">Click to expand <span class="material-symbols-outlined hint-arrow">expand_more</span></span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -75,7 +115,7 @@
         <section id="projects" class="page-section hidden">
             <h2>Projects Showcase</h2>
             <div id="projects-container" class="projects-grid">
-                <!-- Projects will be dynamically populated or static cards -->
+                <!-- Projects will be dynamically populated -->
             </div>
         </section>
 
@@ -125,7 +165,10 @@
 
     <!-- 3. FOOTER -->
     <footer class="main-footer">
-        <p>&copy; 2026 Godwin Archibong - Academic Portfolio. All rights reserved.</p>
+        <p>&copy; <span id="current-year"></span> Godwin Archibong - Academic Portfolio. All rights reserved.</p>
+        <script>
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+        </script>
     </footer>
 
 </body>
