@@ -4,9 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Planner</title>
+    <!-- Add this Google Fonts Material Symbols link -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
+
+    <!-- Main Navigation -->
+    <header class="main-header">
+        <div class="nav-container">
+            <a href="index.html" class="brand-logo" data-page="home">GW</a>
+            
+            <!-- Mobile Menu Toggle Button -->
+            <button class="mobile-nav-toggle" id="menu-toggle" aria-label="Toggle navigation">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <!-- Navigation Links -->
+
+            <!-- Navigation Links -->
+            <nav class="nav-menu" id="nav-menu">
+                <button type="button" id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode">
+                    <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+                    <span id="theme-text">Theme</span>
+                </button>
+                <a href="index.html" class="nav-link" >Home</a>
+                <a href="index.html#about" class="nav-link" >About Me</a>
+                <a href="index.html#projects" class="nav-link">Projects</a>
+                <a href="planner.html" class="nav-link active" >Academic Planner</a>
+                <a href="index.html#contact" class="nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <section id="planner" class="page-section">
+                <h2>Academic Planner</h2>
+                
+                <div class="planner-wrapper">
+                    <!-- Task Input Section -->
+                    <div class="task-input-wrapper">
+                        <input type="text" id="task-input" placeholder="Enter new academic task..." aria-label="New Task Input">
+                        <button type="button" id="add-task-btn">Add Task</button>
+                    </div>
+
+                    <!-- Task List Container -->
+                    <ul id="task-list-container" class="task-list">
+                        <p class="empty-tasks">No tasks added yet.</p>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+
     <!-- Edit Task Modal -->
     <div id="edit-task-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title" style="display: none;">
         <div class="modal-content">
@@ -39,6 +93,10 @@
             </form>
         </div>
     </div>
+
+    <div id="toast-notification">Task deleted successfully</div>
+
+    <!-- Planner Script Only -->
     <script src="js/planner.js?v=2" defer></script>
 </body>
 </html>

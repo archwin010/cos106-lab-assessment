@@ -2,31 +2,98 @@
 // ACADEMIC PLANNER MODULE (planner.js)
 // ==========================================
 
-window.addTask = function() {
-    console.log("1. addTask function triggered!");
+window.AppState = window.AppState || { tasks: [] };
 
-    // Look for the input by ID, or fallback to any text input in the planner section
-    const inputField = document.getElementById('task-input') || document.querySelector('.planner-wrapper input[type="text"]') || document.querySelector('input[type="text"]');
-    console.log("2. Target input field found:", inputField);
-
-    if (!inputField) {
-        console.error("ERROR: Could not find any text input element on the page!");
-        return;
+// Load saved tasks from localStorage
+function loadStateFromStorage() {
+    const saved = localStorage.getItem('academic_planner_state');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (parsed && Array.isArray(parsed.tasks)) {
+                window.AppState.tasks = parsed.tasks;
+            }
+        } catch (e) {
+            console.error("Failed to load planner state from storage", e);
+        }
     }
+}
+
+window.saveStateToStorage = function() {
+    localStorage.setItem('academic_planner_state', JSON.stringify(window.AppState));
+};
+
+// Theme Initialization & Toggle
+function initTheme() {
+    const savedTheme = localStorage.getItem('site_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.body.classList.add('dark-mode');
+        updateThemeButtonUI(true);
+    } else {
+        document.body.classList.remove('dark-mode');
+        updateThemeButtonUI(false);
+    }
+
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn && !themeToggleBtn.dataset.initialized) {
+        themeToggleBtn.dataset.initialized = "true";
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('site_theme', isDark ? 'dark' : 'light');
+            updateThemeButtonUI(isDark);
+        });
+    }
+}
+
+function updateThemeButtonUI(isDark) {
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    if (text) text.textContent = isDark ? 'Light' : 'Dark';
+}
+
+// Unified Mobile Menu Toggle Initialization
+function initMobileMenu() {
+    const menuToggleBtn = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    if (menuToggleBtn && navMenu && !menuToggleBtn.dataset.menuInitialized) {
+        menuToggleBtn.dataset.menuInitialized = "true";
+        
+        menuToggleBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            navMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!navMenu.contains(event.target) && !menuToggleBtn.contains(event.target)) {
+                navMenu.classList.remove('active');
+            }
+        });
+    }
+}
+
+// Toast Notification Handler
+function showToast(message = "Action completed successfully") {
+    const toast = document.getElementById('toast-notification');
+    if (!toast) return;
+    
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2500);
+}
+
+window.addTask = function() {
+    const inputField = document.getElementById('task-input');
+    if (!inputField) return;
     
     const taskText = inputField.value.trim();
-    console.log("3. Captured input text:", JSON.stringify(taskText));
-
-    if (taskText === '') {
-        console.warn("WARNING: Task text is empty. Aborting add.");
-        return;
-    }
-
-    // Ensure AppState exists globally
-    if (typeof AppState === 'undefined') {
-        console.error("ERROR: AppState is not defined! Initializing fallback.");
-        window.AppState = { tasks: [] };
-    }
+    if (!taskText) return;
 
     const newTask = {
         id: Date.now(),
@@ -36,35 +103,24 @@ window.addTask = function() {
         completed: false
     };
 
-    AppState.tasks.push(newTask);
-    console.log("4. Task added to AppState.tasks:", AppState.tasks);
-
+    window.AppState.tasks.push(newTask);
     inputField.value = '';
 
-    if (typeof saveStateToStorage === 'function') {
-        saveStateToStorage();
-    } else {
-        console.warn("NOTICE: saveStateToStorage function not found.");
-    }
-
-    if (typeof window.renderTasks === 'function') {
-        window.renderTasks();
-    } else {
-        console.error("ERROR: renderTasks function is not defined!");
-    }
+    window.saveStateToStorage();
+    window.renderTasks();
+    showToast("Task added successfully");
 };
 
 window.renderTasks = function() {
-    const tasksContainer = document.getElementById('task-list-container') || document.querySelector('.task-list-container') || document.querySelector('ul.task-list');
-    
+    const tasksContainer = document.getElementById('task-list-container');
     if (!tasksContainer) return;
 
-    if (!AppState.tasks || AppState.tasks.length === 0) {
+    if (!window.AppState.tasks.length) {
         tasksContainer.innerHTML = '<p class="empty-tasks">No tasks added yet.</p>';
         return;
     }
 
-    tasksContainer.innerHTML = AppState.tasks.map((task) => `
+    tasksContainer.innerHTML = window.AppState.tasks.map((task) => `
         <div class="task-card ${task.completed ? 'completed' : ''}" data-id="${task.id}">
             <div class="task-info">
                 <div class="task-title-row">
@@ -86,58 +142,23 @@ window.renderTasks = function() {
     `).join('');
 };
 
-// Fixed modal opener that finds the task by its unique ID instead of array index
 window.openEditTaskModal = function(taskId) {
-    console.log("Edit button clicked for taskId:", taskId);
-    console.log("Current AppState.tasks:", AppState.tasks);
+    const taskIndex = window.AppState.tasks.findIndex(t => t.id === taskId);
+    const task = window.AppState.tasks[taskIndex];
+    if (!task) return;
 
-    const taskIndex = AppState.tasks.findIndex(t => t.id === taskId);
-    console.log("Found taskIndex:", taskIndex);
+    document.getElementById('edit-task-index').value = taskIndex;
+    document.getElementById('edit-task-title').value = task.text || '';
+    document.getElementById('edit-task-desc').value = task.description || '';
+    document.getElementById('edit-task-date').value = task.dueDate || '';
 
-    const task = AppState.tasks[taskIndex];
-    if (!task) {
-        console.error("ERROR: Task could not be found in AppState!");
-        return;
-    }
-
-    const indexField = document.getElementById('edit-task-index');
-    const titleField = document.getElementById('edit-task-title');
-    const descField = document.getElementById('edit-task-desc');
-    const dateField = document.getElementById('edit-task-date');
-    const modalEl = document.getElementById('edit-task-modal');
-
-    if (!modalEl) {
-        console.error("ERROR: #edit-task-modal element not found in HTML!");
-        return;
-    }
-
-    if (indexField) indexField.value = taskIndex;
-    if (titleField) titleField.value = task.text || '';
-    if (descField) descField.value = task.description || '';
-    if (dateField) dateField.value = task.dueDate || '';
-
-    modalEl.style.display = 'flex';
-    console.log("Modal display set to flex.");
+    const modal = document.getElementById('edit-task-modal');
+    if (modal) modal.style.display = 'flex';
 };
-
-// Make sure toggleTask is also globally exposed
-window.toggleTask = function(taskId) {
-    const task = AppState.tasks.find(t => t.id === taskId);
-    if (task) {
-        task.completed = !task.completed;
-        if (typeof saveStateToStorage === 'function') saveStateToStorage();
-        window.renderTasks();
-    }
-};
-
-function saveStateToStorage() {
-    if (typeof AppState !== 'undefined') {
-        localStorage.setItem('academic_planner_state', JSON.stringify(AppState));
-    }
-}
 
 window.closeEditModal = function() {
-    document.getElementById('edit-task-modal').style.display = 'none';
+    const modal = document.getElementById('edit-task-modal');
+    if (modal) modal.style.display = 'none';
 };
 
 window.handleSaveEditedTask = function(event) {
@@ -148,34 +169,45 @@ window.handleSaveEditedTask = function(event) {
     const description = document.getElementById('edit-task-desc').value;
     const dueDate = document.getElementById('edit-task-date').value;
 
-    if (AppState.tasks[index]) {
-        AppState.tasks[index].text = newText;
-        AppState.tasks[index].description = description;
-        AppState.tasks[index].dueDate = dueDate;
+    if (window.AppState.tasks[index]) {
+        window.AppState.tasks[index].text = newText;
+        window.AppState.tasks[index].description = description;
+        window.AppState.tasks[index].dueDate = dueDate;
 
-        if (typeof saveStateToStorage === 'function') {
-            saveStateToStorage();
-        }
-
+        window.saveStateToStorage();
         window.renderTasks();
+        showToast("Task edited successfully");
     }
 
     window.closeEditModal();
 };
 
-window.deleteTask = function(taskId) {
-    AppState.tasks = AppState.tasks.filter(t => t.id !== taskId);
-    
-    if (typeof saveStateToStorage === 'function') {
-        saveStateToStorage();
+window.toggleTask = function(taskId) {
+    const task = window.AppState.tasks.find(t => t.id === taskId);
+    if (task) {
+        task.completed = !task.completed;
+        window.saveStateToStorage();
+        window.renderTasks();
     }
-    window.renderTasks();
 };
 
-// Bind listeners safely on load
-function initPlannerEvents() {
+window.deleteTask = function(taskId) {
+    window.AppState.tasks = window.AppState.tasks.filter(t => t.id !== taskId);
+    window.saveStateToStorage();
+    window.renderTasks();
+    showToast("Task deleted successfully");
+};
+
+// Initialization
+function initPlanner() {
+    loadStateFromStorage();
+    initMobileMenu();
+    initTheme();
+    window.renderTasks();
+
     const addTaskBtn = document.getElementById('add-task-btn');
     const taskInput = document.getElementById('task-input');
+    const editModal = document.getElementById('edit-task-modal');
 
     if (addTaskBtn) {
         addTaskBtn.addEventListener('click', (e) => {
@@ -192,11 +224,19 @@ function initPlannerEvents() {
             }
         });
     }
+
+    // Close edit modal when clicking outside the modal content box
+    if (editModal) {
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                window.closeEditModal();
+            }
+        });
+    }
 }
 
-// Initialize immediately or on DOM load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPlannerEvents);
+    document.addEventListener('DOMContentLoaded', initPlanner);
 } else {
-    initPlannerEvents();
+    initPlanner();
 }

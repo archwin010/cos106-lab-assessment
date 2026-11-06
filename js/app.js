@@ -1,6 +1,5 @@
 const AppState = {
     activeTab: 'home',
-    tasks: [],
     projects: [
         {
             title: 'G-Store',
@@ -19,8 +18,7 @@ const AppState = {
             description: 'A multipage school website template designed to provide information about the school, its programs, and events. Built with HTML, CSS, and JavaScript.',
             imageURL: 'assets/images/multipage_school_website.png',
             link: 'https://multi-page-school-website.vercel.app/'
-        },
-
+        }
     ]
 };
 
@@ -29,14 +27,10 @@ const DOM = {
     navLinks: document.querySelectorAll('.nav-link'),
     pageSections: document.querySelectorAll('.page-section'),
     menuToggleBtn: document.getElementById('menu-toggle'),
-    navMenu: document.getElementById('nav-menu'),
-    taskInput: document.getElementById('task-input'),
-    addTaskBtn: document.getElementById('add-task-btn'),
-    taskListContainer: document.getElementById('task-list'),
-    contactForm: document.getElementById('contact-form'),
-}
+    navMenu: document.getElementById('nav-menu')
+};
 
-// Render Functions
+// Render Page (SPA View Switcher)
 function renderPage(pageId) {
     AppState.activeTab = pageId;
 
@@ -53,77 +47,104 @@ function renderPage(pageId) {
     }
 }
 
+// Theme Initialization & Toggle
+function initTheme() {
+    const savedTheme = localStorage.getItem('site_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.body.classList.add('dark-mode');
+        updateThemeButtonUI(true);
+    } else {
+        document.body.classList.remove('dark-mode');
+        updateThemeButtonUI(false);
+    }
 
-// ABOUT ME CARD INTERACTIVITY & TOGGLE
-function toggleCard(cardElement) {
-    // Toggle the expanded class
-    const isExpanded = cardElement.classList.toggle('expanded');
-    
-    // Find the hint span inside the clicked card
-    const hintSpan = cardElement.querySelector('.click-hint');
-    
-    if (hintSpan) {
-        if (isExpanded) {
-            hintSpan.innerHTML = 'Click to collapse <i class="bi bi-chevron-up"></i>';
-        } else {
-            hintSpan.innerHTML = 'Click to expand <i class="bi bi-chevron-down"></i>';
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn && !themeToggleBtn.dataset.initialized) {
+        themeToggleBtn.dataset.initialized = "true";
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('site_theme', isDark ? 'dark' : 'light');
+            updateThemeButtonUI(isDark);
+        });
+    }
+}
+
+function updateThemeButtonUI(isDark) {
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    if (text) text.textContent = isDark ? 'Light' : 'Dark';
+}
+
+
+
+// Mobile Menu Toggle Initialization (Unified & Bulletproof)
+function initMobileMenu() {
+    if (DOM.menuToggleBtn && DOM.navMenu) {
+        if (!DOM.menuToggleBtn.dataset.menuInitialized) {
+            DOM.menuToggleBtn.dataset.menuInitialized = "true";
+            
+            DOM.menuToggleBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                DOM.navMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!DOM.navMenu.contains(event.target) && !DOM.menuToggleBtn.contains(event.target)) {
+                    DOM.navMenu.classList.remove('active');
+                }
+            });
         }
     }
 }
 
-// Task Management Functions
-function renderTasks() {
-    if (!DOM.taskListContainer) return;
-
-    if (AppState.tasks.length === 0) {
-        DOM.taskListContainer.innerHTML = '<li class="empty-message">No tasks added yet.</li>';
-        return;
+// About Me Card Interactivity & Toggle
+function toggleCard(cardElement) {
+    const isExpanded = cardElement.classList.toggle('expanded');
+    const hintSpan = cardElement.querySelector('.click-hint');
+    
+    if (hintSpan) {
+        hintSpan.innerHTML = isExpanded 
+            ? 'Click to collapse <i class="bi bi-chevron-up"></i>' 
+            : 'Click to expand <i class="bi bi-chevron-down"></i>';
     }
-
-    // Render tasks with completed status
-    DOM.taskListContainer.innerHTML = AppState.tasks.map(task => `<li class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-        <span class="task-text">${task.text}</span>
-        <div class="task-actions">
-            <button class="toggle-btn" onclick="toggleTask(${task.id})">${task.  completed ? 'Undo' : 'Complete'}
-            </button>
-            <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
-        </div>
-        
-    </li>`).join('');
 }
 
-// Event handlers
+// Event Handlers for Navigation
 function bindEvents() {
     DOM.navLinks.forEach(link => {
         link.addEventListener('click', (event) => {
+            const href = link.getAttribute('href');
+            
+            // Allow normal browser navigation for separate HTML pages
+            if (href && href.includes('.html')) {
+                return; 
+            }
+
             event.preventDefault();
             const pageTarget = link.getAttribute('data-page');
             if (pageTarget) renderPage(pageTarget);
         });
     });
-
-    if (DOM.menuToggleBtn && DOM.navMenu) {
-        DOM.menuToggleBtn.addEventListener('click', (event) => {
-            DOM.navMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!DOM.navMenu.contains(event.target) && !DOM.menuToggleBtn.contains(event.target)) {
-                DOM.navMenu.classList.remove('active');
-            }
-        });
-    }
-
-    if (DOM.addTaskBtn && typeof addTask === 'function') {
-        DOM.addTaskBtn.addEventListener('click', addTask);
-    }
 }
-
 
 function initializeApp() {
+    initMobileMenu();
     bindEvents();
+
+    // Check URL hash, render that section, and clean up the URL bar
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById(hash)) {
+        AppState.activeTab = hash;
+        history.replaceState(null, document.title, window.location.pathname);
+    }
+
+    
+    document.addEventListener('DOMContentLoaded', initTheme);
+
     renderPage(AppState.activeTab);
-    renderTasks();
 }
 
-initializeApp();
+document.addEventListener('DOMContentLoaded', initializeApp);
